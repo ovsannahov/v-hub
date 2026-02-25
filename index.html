@@ -3,76 +3,131 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <title>V-Hub</title>
 
 <style>
-:root {
-  --bg: var(--tg-theme-bg-color, #f4f4f4);
-  --text: var(--tg-theme-text-color, #111);
-  --button: var(--tg-theme-button-color, #2AABEE);
-  --button-text: var(--tg-theme-button-text-color, #fff);
-  --secondary: var(--tg-theme-secondary-bg-color, #ffffff);
+:root{
+  --bg:#1c1c1e;
+  --card:#ffffff;
+  --accent:linear-gradient(135deg,#00c6ff,#007aff);
+  --text-dark:#111;
+  --error:#ff453a;
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 20px;
+*{
+  box-sizing:border-box;
 }
 
-.container {
-  max-width: 500px;
-  margin: auto;
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Roboto",sans-serif;
+  background:var(--bg);
+  color:#fff;
+  padding:24px;
 }
 
-.card {
-  background: var(--secondary);
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 16px;
+.container{
+  max-width:480px;
+  margin:auto;
 }
 
-h1 {
-  font-size: 22px;
-  margin-bottom: 16px;
+.card{
+  background:var(--card);
+  color:var(--text-dark);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+  animation:fadeUp .6s ease forwards;
+  opacity:0;
 }
 
-input, select, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 16px;
-  box-sizing: border-box;
+@keyframes fadeUp{
+  from{transform:translateY(20px);opacity:0;}
+  to{transform:translateY(0);opacity:1;}
 }
 
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  background: var(--button);
-  color: var(--button-text);
-  cursor: pointer;
+h1{
+  font-size:26px;
+  font-weight:700;
+  margin-bottom:20px;
 }
 
-button:disabled {
-  opacity: 0.6;
+h2{
+  margin:10px 0;
 }
 
-.loader {
-  text-align: center;
-  padding: 20px;
-  display: none;
-  font-weight: 600;
+input,select,textarea{
+  width:100%;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid #e5e5ea;
+  background:#f9f9fb;
+  margin-bottom:14px;
+  font-size:16px;
+  transition:.2s;
+}
+
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:#007aff;
+  box-shadow:0 0 0 3px rgba(0,122,255,0.2);
+  background:#fff;
+}
+
+button{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:16px;
+  font-size:16px;
+  font-weight:600;
+  background:var(--accent);
+  color:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,122,255,0.4);
+}
+
+.loader{
+  text-align:center;
+  padding:20px;
+  display:none;
+}
+
+.spinner{
+  border:4px solid rgba(255,255,255,0.2);
+  border-top:4px solid #fff;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+
+.error-box{
+  background:var(--error);
+  color:#fff;
+  padding:14px;
+  border-radius:16px;
+  margin-bottom:16px;
+  font-weight:500;
+  animation:fadeUp .4s ease forwards;
+}
+
+.icon{
+  font-size:22px;
+  margin-right:8px;
 }
 </style>
 </head>
@@ -80,178 +135,171 @@ button:disabled {
 <body>
 <div class="container">
   <div id="app"></div>
-  <div class="loader" id="loader">Завантаження...</div>
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+  </div>
 </div>
 
 <script>
-const SCRIPT_URL = "ВСТАВ СЮДИ СВОЄ ПОСИЛАННЯ НА GOOGLE APPS SCRIPT";
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycbw7e-As3ksP63GWLoKF5m5jHMh83hH5a3Bh90oP08-InVYF8lJP2vZH6jF3ilmOmGUa/exec";
 
-const tg = window.Telegram.WebApp;
+const tg=window.Telegram.WebApp;
 tg.expand();
 
-const tgUser = tg.initDataUnsafe?.user;
-const tg_id = tgUser?.id;
+const tgUser=tg.initDataUnsafe?.user;
+const tg_id=tgUser?.id;
 
-const app = document.getElementById("app");
-const loader = document.getElementById("loader");
+const app=document.getElementById("app");
+const loader=document.getElementById("loader");
 
-function showLoader(show) {
-  loader.style.display = show ? "block" : "none";
+function showLoader(show){
+  loader.style.display=show?"block":"none";
 }
 
-async function apiRequest(method, data) {
-  showLoader(true);
-  try {
-    let response;
+function showError(message){
+  const error=document.createElement("div");
+  error.className="error-box";
+  error.innerText=message;
+  app.prepend(error);
+  setTimeout(()=>error.remove(),4000);
+}
 
-    if (method === "GET") {
-      const params = new URLSearchParams(data).toString();
-      response = await fetch(`${SCRIPT_URL}?${params}`);
-    } else {
-      response = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(data)
+async function apiRequest(method,data){
+  showLoader(true);
+  try{
+    let response;
+    if(method==="GET"){
+      const params=new URLSearchParams(data).toString();
+      response=await fetch(`${SCRIPT_URL}?${params}`);
+    }else{
+      response=await fetch(SCRIPT_URL,{
+        method:"POST",
+        body:JSON.stringify(data)
       });
     }
-
-    const result = await response.json();
+    const result=await response.json();
     showLoader(false);
     return result;
-  } catch (err) {
+  }catch(err){
     showLoader(false);
-    alert("Помилка з'єднання із сервером");
+    showError("Помилка з'єднання із сервером");
   }
 }
 
-async function checkUser() {
-  const result = await apiRequest("GET", {
-    action: "getUser",
-    tg_id: tg_id
-  });
-
-  if (!result || result.status === "not_found") {
+async function checkUser(){
+  const result=await apiRequest("GET",{action:"getUser",tg_id:tg_id});
+  if(!result||result.status==="not_found"){
     showRegistration();
-  } else {
+  }else{
     showDashboard(result);
   }
 }
 
-function showRegistration() {
-  app.innerHTML = `
-    <div class="card">
-      <h1>Реєстрація</h1>
-      <input id="name" placeholder="Ваше ім'я" />
-      <input id="age" type="number" placeholder="Вік" />
-      <input id="location" placeholder="Місто" />
-      <select id="role">
-        <option value="Volunteer">Волонтер</option>
-        <option value="Leader">Голова організації</option>
-      </select>
-      <div id="inviteField"></div>
-      <button onclick="register()">Зареєструватися</button>
-    </div>
+function showRegistration(){
+  app.innerHTML=`
+  <div class="card">
+    <h1>🚀 V-Hub</h1>
+    <input id="name" placeholder="Ваше ім'я">
+    <input id="age" type="number" placeholder="Вік">
+    <input id="location" placeholder="Місто">
+    <select id="role">
+      <option value="Volunteer">Волонтер</option>
+      <option value="Leader">Голова</option>
+    </select>
+    <div id="inviteField"></div>
+    <button onclick="register()">Зареєструватися</button>
+  </div>
   `;
 
-  document.getElementById("role").addEventListener("change", (e) => {
-    if (e.target.value === "Volunteer") {
-      document.getElementById("inviteField").innerHTML =
-        `<input id="org_code" placeholder="Код організації" />`;
-    } else {
-      document.getElementById("inviteField").innerHTML = "";
+  document.getElementById("role").addEventListener("change",(e)=>{
+    if(e.target.value==="Volunteer"){
+      document.getElementById("inviteField").innerHTML=
+      `<input id="org_code" placeholder="Код організації">`;
+    }else{
+      document.getElementById("inviteField").innerHTML="";
     }
   });
 
   document.getElementById("role").dispatchEvent(new Event("change"));
 }
 
-async function register() {
-  const role = document.getElementById("role").value;
-  const org_code = document.getElementById("org_code")?.value || "";
-
-  const data = {
-    action: "registerUser",
-    tg_id: tg_id,
-    name: document.getElementById("name").value,
-    age: document.getElementById("age").value,
-    location: document.getElementById("location").value,
-    role: role,
-    org_id: org_code
+async function register(){
+  const role=document.getElementById("role").value;
+  const data={
+    action:"registerUser",
+    tg_id:tg_id,
+    name:document.getElementById("name").value,
+    age:document.getElementById("age").value,
+    location:document.getElementById("location").value,
+    role:role,
+    org_id:document.getElementById("org_code")?.value||""
   };
 
-  const result = await apiRequest("POST", data);
+  const result=await apiRequest("POST",data);
 
-  if (result.status === "success") {
+  if(result.status==="success"){
     checkUser();
-  } else {
-    alert("Помилка реєстрації");
+  }else{
+    showError("Помилка реєстрації");
   }
 }
 
-function showDashboard(user) {
-  if (user.Role === "Volunteer") {
-    app.innerHTML = `
-      <div class="card">
-        <h1>Особистий кабінет</h1>
-        <p>Вітаємо, ${user.Name}</p>
-        <button onclick="showReportForm()">Здати звіт</button>
-      </div>
-    `;
-  } else {
-    const inviteCode = user.Org_ID || generateInviteCode();
-    app.innerHTML = `
-      <div class="card">
-        <h1>Панель голови</h1>
-        <p>Інвайт-код організації:</p>
-        <h2>${inviteCode}</h2>
-        <button onclick="openSheet()">Відкрити таблицю</button>
-      </div>
-    `;
-  }
-}
-
-function showReportForm() {
-  app.innerHTML = `
+function showDashboard(user){
+  if(user.Role==="Volunteer"){
+    app.innerHTML=`
     <div class="card">
-      <h1>Новий звіт</h1>
-      <input id="category" placeholder="Категорія допомоги" />
-      <textarea id="report_text" placeholder="Текст звіту"></textarea>
-      <input id="hours" type="number" placeholder="Кількість годин" />
-      <button onclick="submitReport()">Надіслати звіт</button>
+      <h1>👋 Вітаємо, ${user.Name}</h1>
+      <button onclick="showReportForm()">📋 Здати звіт</button>
     </div>
+    `;
+  }else{
+    app.innerHTML=`
+    <div class="card">
+      <h1>🏢 Панель голови</h1>
+      <h2>Інвайт-код:</h2>
+      <p><strong>${user.Org_ID}</strong></p>
+      <button onclick="window.open('https://docs.google.com/spreadsheets/','_blank')">
+        📊 Відкрити таблицю
+      </button>
+    </div>
+    `;
+  }
+}
+
+function showReportForm(){
+  app.innerHTML=`
+  <div class="card">
+    <h1>📝 Новий звіт</h1>
+    <input id="category" placeholder="Категорія">
+    <textarea id="report_text" placeholder="Текст звіту"></textarea>
+    <input id="hours" type="number" placeholder="Кількість годин">
+    <button onclick="submitReport()">Надіслати</button>
+  </div>
   `;
 }
 
-async function submitReport() {
-  const data = {
-    action: "submitReport",
-    tg_id: tg_id,
-    category: document.getElementById("category").value,
-    report_text: document.getElementById("report_text").value,
-    hours: document.getElementById("hours").value,
-    photo_url: ""
+async function submitReport(){
+  const data={
+    action:"submitReport",
+    tg_id:tg_id,
+    category:document.getElementById("category").value,
+    report_text:document.getElementById("report_text").value,
+    hours:document.getElementById("hours").value,
+    photo_url:""
   };
 
-  const result = await apiRequest("POST", data);
+  const result=await apiRequest("POST",data);
 
-  if (result.status === "success") {
-    alert("Звіт успішно надіслано!");
-    checkUser();
-  } else {
-    alert("Помилка відправки");
+  if(result.status==="success"){
+    showDashboard({Name:tgUser.first_name,Role:"Volunteer"});
+  }else{
+    showError("Не вдалося надіслати звіт");
   }
 }
 
-function openSheet() {
-  window.open("https://docs.google.com/spreadsheets/", "_blank");
-}
-
-function generateInviteCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-if (!tg_id) {
-  app.innerHTML = "<p>Будь ласка, відкрийте застосунок через Telegram</p>";
-} else {
+if(!tg_id){
+  app.innerHTML="<div class='card'><h1>Відкрий через Telegram</h1></div>";
+}else{
   checkUser();
 }
 </script>
